@@ -28,7 +28,7 @@ const LabelInputContainer = ({
 };
 
 
-function RegisterPage() {
+export default function RegisterPage() {
     const {createAccount, login} = useAuthStore();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState("");
@@ -151,5 +151,3 @@ function RegisterPage() {
         </div>
     );
 }
-
-export default RegisterPage

@@ -27,7 +27,7 @@ const LabelInputContainer = ({
     return <div className={cn("flex w-full flex-col space-y-2", className)}>{children}</div>;
 };
 
-function LoginPage() {
+export default function LoginPage() {
 
     const {login} = useAuthStore();
     const [isLoading, setIsLoading] = React.useState(false);
@@ -131,4 +131,3 @@ function LoginPage() {
     );
 }
 
-export default LoginPage
