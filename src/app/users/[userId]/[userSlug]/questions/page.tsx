@@ -10,15 +10,16 @@ const Page = async ({
     params,
     searchParams,
 }: {
-    params: { userId: string; userSlug: string };
-    searchParams: { page?: string };
+    params: Promise<{ userId: string; userSlug: string }>;
+    searchParams: Promise<{ page?: string }>;
 }) => {
-    searchParams.page ||= "1";
+    const {userId} = await params;
+    const {page="1"}= await searchParams;
 
     const queries = [
-        Query.equal("authorId", params.userId),
+        Query.equal("authorId", userId),
         Query.orderDesc("$createdAt"),
-        Query.offset((+searchParams.page - 1) * 25),
+        Query.offset((+page - 1) * 25),
         Query.limit(25),
     ];
 

@@ -6,16 +6,23 @@ import NumberTicker from "@/components/magicui/number-ticker";
 import { answerCollection, db, questionCollection } from "@/models/name";
 import { Query } from "node-appwrite";
 
-const Page = async ({ params }: { params: { userId: string; userSlug: string } }) => {
+const Page = async ({
+    params,
+}: {
+    params: Promise<{ userId: string; userSlug: string }>;
+}) => {
+    // ✅ unwrap params first
+    const { userId, userSlug } = await params;
+
     const [user, questions, answers] = await Promise.all([
-        users.get<UserPrefs>(params.userId),
+        users.get<UserPrefs>(userId),
         databases.listDocuments(db, questionCollection, [
-            Query.equal("authorId", params.userId),
-            Query.limit(1), // for optimization
+            Query.equal("authorId", userId),
+            Query.limit(1),
         ]),
         databases.listDocuments(db, answerCollection, [
-            Query.equal("authorId", params.userId),
-            Query.limit(1), // for optimization
+            Query.equal("authorId", userId),
+            Query.limit(1),
         ]),
     ]);
 
@@ -28,8 +35,8 @@ const Page = async ({ params }: { params: { userId: string; userSlug: string } }
                 <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
                     <NumberTicker value={user.prefs.reputation} />
                 </p>
-                <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
             </MagicCard>
+
             <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
                 <div className="absolute inset-x-4 top-4">
                     <h2 className="text-xl font-medium">Questions asked</h2>
@@ -37,8 +44,8 @@ const Page = async ({ params }: { params: { userId: string; userSlug: string } }
                 <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
                     <NumberTicker value={questions.total} />
                 </p>
-                <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
             </MagicCard>
+
             <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
                 <div className="absolute inset-x-4 top-4">
                     <h2 className="text-xl font-medium">Answers given</h2>
@@ -46,7 +53,6 @@ const Page = async ({ params }: { params: { userId: string; userSlug: string } }
                 <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
                     <NumberTicker value={answers.total} />
                 </p>
-                <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
             </MagicCard>
         </MagicContainer>
     );

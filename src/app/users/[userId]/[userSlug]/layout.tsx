@@ -12,9 +12,11 @@ const Layout = async ({
     params,
 }: {
     children: React.ReactNode;
-    params: { userId: string; userSlug: string };
+    params: Promise<{ userId: string; userSlug: string }>;
 }) => {
-    const user = await users.get<UserPrefs>(params.userId);
+    const { userId, userSlug } = await params;
+
+    const user = await users.get<UserPrefs>(userId);
 
     return (
         <div className="container mx-auto space-y-4 px-4 pb-20 pt-32">
@@ -35,7 +37,7 @@ const Layout = async ({
                             <p className="text-lg text-gray-500">{user.email}</p>
                             <p className="flex items-center gap-1 text-sm font-bold text-gray-500">
                                 <IconUserFilled className="w-4 shrink-0" /> Dropped{" "}
-                                {convertDateToRelativeTime(new Date(user.$createdAt))},
+                                {convertDateToRelativeTime(new Date(user.$createdAt))}
                             </p>
                             <p className="flex items-center gap-1 text-sm text-gray-500">
                                 <IconClockFilled className="w-4 shrink-0" /> Last activity&nbsp;
