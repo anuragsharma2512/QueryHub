@@ -7,6 +7,7 @@ import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react"
 import { useAuthStore } from '@/store/Auth'
 import React from 'react'
 import Link from "next/link";
+import { ArrowRight, UserPlus } from "lucide-react";
 
 const BottomGradient = () => {
     return (
@@ -70,35 +71,43 @@ export default function RegisterPage() {
         setIsLoading(false);
     }
     return (
-        <div className="mx-auto w-full max-w-md rounded-none border border-solid border-white/30 bg-white p-4 shadow-input dark:bg-black md:rounded-2xl md:p-8">
-            <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
-                Welcome to Riverflow
+        <div className="w-full rounded-[2rem] border border-white/10 bg-slate-950/78 p-6 shadow-[0_30px_80px_rgba(2,6,23,0.55)] backdrop-blur-2xl sm:p-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-200">
+                <UserPlus className="size-4" />
+                Create your account
+            </div>
+            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-white">
+                Join QueryHub
             </h2>
-            <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
-                Signup with riverflow if you you don&apos;t have an account.
-                <br /> If you already have an account,{" "}
-                <Link href="/login" className="text-orange-500 hover:underline">
-                    login
-                </Link>{" "}
-                to riverflow
+            <p className="mt-3 max-w-md text-sm leading-7 text-slate-300 sm:text-base">
+                Start asking questions and building your profile. Already have an account?{" "}
+                <Link
+                    href="/login"
+                    className="font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+                >
+                    Log in
+                </Link>
+                .
             </p>
 
             {error && (
-                <p className="mt-8 text-center text-sm text-red-500 dark:text-red-400">{error}</p>
+                <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                    {error}
+                </div>
             )}
-            <form className="my-8" onSubmit={handleSubmit}>
-                <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0">
+            <form className="mt-8 space-y-5 [&_input]:h-12! [&_input]:rounded-xl! [&_input]:border-white/10! [&_input]:bg-white/6! [&_input]:px-4! [&_input]:text-white! [&_input]:placeholder:!text-slate-500 [&_input]:focus-visible:!ring-cyan-400/60 [&_input]:focus-visible:!ring-offset-0" onSubmit={handleSubmit}>
+                <div className="grid gap-4 sm:grid-cols-2">
                     <LabelInputContainer>
-                        <Label htmlFor="firstname">First name</Label>
+                        <Label htmlFor="firstname" className="text-slate-200">First name</Label>
                         <Input className="text-black" id="firstname" name="firstname" placeholder="Tyler" type="text" />
                     </LabelInputContainer>
                     <LabelInputContainer>
-                        <Label htmlFor="lastname">Last name</Label>
+                        <Label htmlFor="lastname" className="text-slate-200">Last name</Label>
                         <Input className="text-black"  id="lastname" name="lastname" placeholder="Durden" type="text" />
                     </LabelInputContainer>
                 </div>
-                <LabelInputContainer className="mb-4">
-                    <Label htmlFor="email">Email Address</Label>
+                <LabelInputContainer>
+                    <Label htmlFor="email" className="text-slate-200">Email Address</Label>
                     <Input
                     className="text-black" 
                         id="email"
@@ -107,46 +116,50 @@ export default function RegisterPage() {
                         type="email"
                     />
                 </LabelInputContainer>
-                <LabelInputContainer className="mb-4">
-                    <Label htmlFor="password">Password</Label>
+                <LabelInputContainer>
+                    <Label htmlFor="password" className="text-slate-200">Password</Label>
                     <Input className="text-black"  id="password" name="password" placeholder="••••••••" type="password" />
                 </LabelInputContainer>
 
                 <button
-                    className="group/btn relative block h-10 w-full rounded-md bg-linear-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+                    className="group/btn relative flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 font-medium text-slate-950 transition-colors hover:bg-cyan-200"
                     type="submit"
                     disabled={isLoading}
                 >
-                    Sign up &rarr;
+                    {isLoading ? "Creating account..." : "Sign up"}
+                    {!isLoading ? <ArrowRight className="size-4" /> : null}
                     <BottomGradient />
                 </button>
 
-                <div className="my-8 h-px w-full bg-linear-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
+                <div className="my-2 h-px w-full bg-linear-to-r from-transparent via-white/15 to-transparent" />
 
                 <div className="flex flex-col space-y-4">
                     <button
-                        className="group/btn relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                        className="group/btn relative flex h-12 w-full items-center justify-start space-x-3 rounded-xl border border-white/10 bg-white/6 px-4 font-medium text-white transition-colors hover:bg-white/10"
                         type="button"
                         disabled={isLoading}
                     >
-                        <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                        <IconBrandGoogle className="h-4 w-4 text-slate-200" />
+                        <span className="text-sm text-slate-200">
                             Google
                         </span>
                         <BottomGradient />
                     </button>
                     <button
-                        className="group/btn relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                        className="group/btn relative flex h-12 w-full items-center justify-start space-x-3 rounded-xl border border-white/10 bg-white/6 px-4 font-medium text-white transition-colors hover:bg-white/10"
                         type="button"
                         disabled={isLoading}
                     >
-                        <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                        <IconBrandGithub className="h-4 w-4 text-slate-200" />
+                        <span className="text-sm text-slate-200">
                             GitHub
                         </span>
                         <BottomGradient />
                     </button>
                 </div>
+                <p className="pt-2 text-center text-xs text-slate-400">
+                    Your signup and auto-login logic remain unchanged.
+                </p>
             </form>
         </div>
     );

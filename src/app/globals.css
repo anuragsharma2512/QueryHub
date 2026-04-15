@@ -121,10 +121,134 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans scroll-smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    background:
+      radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 28%),
+      radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.08), transparent 18%),
+      linear-gradient(180deg, #030712 0%, #040816 40%, #020617 100%);
   }
-  html {
-    @apply font-sans;
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
   }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+@keyframes landing-float-delayed {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(-2deg);
+  }
+}
+
+@keyframes landing-float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(3deg);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) rotate(1deg);
+  }
+}
+
+@keyframes landing-pulse {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.48;
+    transform: scale(1.03);
+  }
+}
+
+.landing-gradient-text {
+  background: linear-gradient(120deg, #f8fafc 0%, #7dd3fc 38%, #5eead4 65%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.landing-aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.landing-aurora-left {
+  top: 4rem;
+  left: -5rem;
+  height: 18rem;
+  width: 18rem;
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.landing-aurora-right {
+  right: -6rem;
+  top: 10rem;
+  height: 20rem;
+  width: 20rem;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.landing-orb {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  animation: landing-pulse 8s ease-in-out infinite;
+}
+
+.landing-orb-one {
+  top: 8rem;
+  left: 42%;
+  height: 20rem;
+  width: 20rem;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.12) 0%, transparent 70%);
+}
+
+.landing-orb-two {
+  bottom: 4rem;
+  right: 10%;
+  height: 16rem;
+  width: 16rem;
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.08) 0%, transparent 70%);
+  animation-duration: 11s;
+}
+
+.landing-noise {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 0.6px, transparent 0.6px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at center, white, transparent 85%);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.landing-float {
+  animation: landing-float 8s ease-in-out infinite;
+}
+
+.landing-float-delayed {
+  animation: landing-float-delayed 7s ease-in-out infinite;
+}
+
+.landing-float-slow {
+  animation: landing-float-slow 10s ease-in-out infinite;
 }
