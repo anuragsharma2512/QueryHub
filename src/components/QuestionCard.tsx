@@ -3,12 +3,25 @@
 import React from "react";
 import { BorderBeam } from "./magicui/border-beam";
 import Link from "next/link";
-import { Models } from "appwrite";
 import slugify from "@/utils/slugify";
 import { avatars } from "@/models/client/config";
 import convertDateToRelativeTime from "@/utils/relativeTime";
 
-const QuestionCard = ({ ques }: { ques: Models.Document }) => {
+type QuestionCardData = {
+    $id: string;
+    $createdAt: string;
+    title?: string;
+    tags?: string[];
+    totalVotes?: number;
+    totalAnswers?: number;
+    author?: {
+        $id: string;
+        name: string;
+        reputation: number;
+    };
+};
+
+const QuestionCard = ({ ques }: { ques: QuestionCardData }) => {
     const [height, setHeight] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
 
@@ -25,18 +38,18 @@ const QuestionCard = ({ ques }: { ques: Models.Document }) => {
         >
             <BorderBeam size={height} duration={12} delay={9} />
             <div className="relative shrink-0 text-sm sm:text-right">
-                <p>{ques.totalVotes} votes</p>
-                <p>{ques.totalAnswers} answers</p>
+                <p>{ques.totalVotes || 0} votes</p>
+                <p>{ques.totalAnswers || 0} answers</p>
             </div>
             <div className="relative w-full">
                 <Link
-                    href={`/questions/${ques.$id}/${slugify(ques.title)}`}
+                    href={`/questions/${ques.$id}/${slugify(ques.title || "question")}`}
                     className="text-orange-500 duration-200 hover:text-orange-600"
                 >
                     <h2 className="text-xl">{ques.title}</h2>
                 </Link>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    {ques.tags.map((tag: string) => (
+                    {(ques.tags || []).map((tag: string) => (
                         <Link
                             key={tag}
                             href={`/questions?tag=${tag}`}
@@ -48,18 +61,18 @@ const QuestionCard = ({ ques }: { ques: Models.Document }) => {
                     <div className="ml-auto flex items-center gap-1">
                         <picture>
                             <img
-                                src={String(avatars.getInitials(ques.author.name, 24, 24))}
-                                alt={ques.author.name}
+                                src={String(avatars.getInitials(ques.author?.name || "User", 24, 24))}
+                                alt={ques.author?.name || "User"}
                                 className="rounded-lg"
                             />
                         </picture>
                         <Link
-                            href={`/users/${ques.author.$id}/${slugify(ques.author.name)}`}
+                            href={`/users/${ques.author?.$id || ""}/${slugify(ques.author?.name || "user")}`}
                             className="text-orange-500 hover:text-orange-600"
                         >
-                            {ques.author.name}
+                            {ques.author?.name}
                         </Link>
-                        <strong>&quot;{ques.author.reputation}&quot;</strong>
+                        <strong>&quot;{ques.author?.reputation || 0}&quot;</strong>
                     </div>
                     <span>asked {convertDateToRelativeTime(new Date(ques.$createdAt))}</span>
                 </div>
