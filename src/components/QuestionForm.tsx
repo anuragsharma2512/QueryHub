@@ -8,7 +8,7 @@ import { useAuthStore } from "@/store/Auth";
 import { cn } from "@/lib/utils";
 import slugify from "@/utils/slugify";
 import { IconX } from "@tabler/icons-react";
-import { Models, ID } from "appwrite";
+import { ID } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { databases, storage } from "@/models/client/config";
@@ -35,12 +35,21 @@ const LabelInputContainer = ({
     );
 };
 
+type QuestionDocument = {
+    $id: string;
+    title?: string;
+    content?: string;
+    authorId?: string;
+    tags?: string[];
+    attachmentId?: string;
+};
+
 /**
  * ******************************************************************************
  * ![INFO]: for buttons, refer to https://ui.aceternity.com/components/tailwindcss-buttons
  * ******************************************************************************
  */
-const QuestionForm = ({ question }: { question?: Models.Document }) => {
+const QuestionForm = ({ question }: { question?: QuestionDocument }) => {
     const { user } = useAuthStore();
     const [tag, setTag] = React.useState("");
     const router = useRouter();
@@ -110,11 +119,13 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
 
     const update = async () => {
         if (!question) throw new Error("Please provide a question");
+        const existingAttachmentId = question.attachmentId;
+        if (!existingAttachmentId) throw new Error("Question attachment is missing");
 
         const attachmentId = await (async () => {
-            if (!formData.attachment) return question?.attachmentId as string;
+            if (!formData.attachment) return existingAttachmentId;
 
-            await storage.deleteFile(questionAttachmentBucket, question.attachmentId);
+            await storage.deleteFile(questionAttachmentBucket, existingAttachmentId);
 
             const file = await storage.createFile(
                 questionAttachmentBucket,
@@ -152,8 +163,8 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
             const response = question ? await update() : await create();
 
             router.push(`/questions/${response.$id}/${slugify(formData.title)}`);
-        } catch (error: any) {
-            setError(() => error.message);
+        } catch (error: unknown) {
+            setError(() => (error instanceof Error ? error.message : "Something went wrong"));
         }
 
         setLoading(() => false);

@@ -3,19 +3,27 @@
 import QuestionForm from "@/components/QuestionForm";
 import { useAuthStore } from "@/store/Auth";
 import slugify from "@/utils/slugify";
-import { Models } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const EditQues = ({ question }: { question: Models.Document }) => {
+type QuestionDocument = {
+    $id: string;
+    title?: string;
+    authorId?: string;
+    content?: string;
+    tags?: string[];
+    attachmentId?: string;
+};
+
+const EditQues = ({ question }: { question: QuestionDocument }) => {
     const { user } = useAuthStore();
     const router = useRouter();
 
     React.useEffect(() => {
         if (question.authorId !== user?.$id) {
-            router.push(`/questions/${question.$id}/${slugify(question.title)}`);
+            router.push(`/questions/${question.$id}/${slugify(question.title || "question")}`);
         }
-    }, []);
+    }, [question.$id, question.authorId, question.title, router, user?.$id]);
 
     if (user?.$id !== question.authorId) return null;
 
