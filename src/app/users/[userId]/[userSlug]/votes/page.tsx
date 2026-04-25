@@ -14,8 +14,8 @@ const Page = async ({
     params: Promise<{ userId: string; userSlug: string }>;
     searchParams: Promise<{ page?: string; voteStatus?: "upvoted" | "downvoted" }>;
 }) => {
-    const {userId} = await params;
-    const {page="1"}= await searchParams;
+    const { userId, userSlug } = await params;
+    const { page = "1", voteStatus } = await searchParams;
 
     const query = [
         Query.equal("votedById", userId),
@@ -24,7 +24,7 @@ const Page = async ({
         Query.limit(25),
     ];
 
-    if (searchParams.voteStatus) query.push(Query.equal("voteStatus", searchParams.voteStatus));
+    if (voteStatus) query.push(Query.equal("voteStatus", voteStatus));
 
     const votes = await databases.listDocuments(db, voteCollection, query);
 
@@ -66,9 +66,9 @@ const Page = async ({
                 <ul className="flex gap-1">
                     <li>
                         <Link
-                            href={`/users/${params.userId}/${params.userSlug}/votes`}
+                            href={`/users/${userId}/${userSlug}/votes`}
                             className={`block w-full rounded-full px-3 py-0.5 duration-200 ${
-                                !searchParams.voteStatus ? "bg-white/20" : "hover:bg-white/20"
+                                !voteStatus ? "bg-white/20" : "hover:bg-white/20"
                             }`}
                         >
                             All
@@ -76,9 +76,9 @@ const Page = async ({
                     </li>
                     <li>
                         <Link
-                            href={`/users/${params.userId}/${params.userSlug}/votes?voteStatus=upvoted`}
+                            href={`/users/${userId}/${userSlug}/votes?voteStatus=upvoted`}
                             className={`block w-full rounded-full px-3 py-0.5 duration-200 ${
-                                searchParams?.voteStatus === "upvoted"
+                                voteStatus === "upvoted"
                                     ? "bg-white/20"
                                     : "hover:bg-white/20"
                             }`}
@@ -88,9 +88,9 @@ const Page = async ({
                     </li>
                     <li>
                         <Link
-                            href={`/users/${params.userId}/${params.userSlug}/votes?voteStatus=downvoted`}
+                            href={`/users/${userId}/${userSlug}/votes?voteStatus=downvoted`}
                             className={`block w-full rounded-full px-3 py-0.5 duration-200 ${
-                                searchParams?.voteStatus === "downvoted"
+                                voteStatus === "downvoted"
                                     ? "bg-white/20"
                                     : "hover:bg-white/20"
                             }`}
