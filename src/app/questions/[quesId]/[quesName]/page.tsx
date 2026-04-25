@@ -18,16 +18,26 @@ import { storage } from "@/models/client/config";
 import { UserPrefs } from "@/store/Auth";
 import convertDateToRelativeTime from "@/utils/relativeTime";
 import slugify from "@/utils/slugify";
-import { IconEdit } from "@tabler/icons-react";
 import Link from "next/link";
 import { Query } from "node-appwrite";
-import React from "react";
 import DeleteQuestion from "./DeleteQuestion";
 import EditQuestion from "./EditQuestion";
 import { TracingBeam } from "@/components/ui/tracing-beam";
 
+const toPlainDocument = <T extends Record<string, unknown>>(document: T) => ({
+    ...document,
+});
+
+const toPlainDocumentList = <T extends Record<string, unknown>>(list: {
+    total: number;
+    documents: T[];
+}) => ({
+    total: list.total,
+    documents: list.documents.map(toPlainDocument),
+});
+
 const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: string }> }) => {
-    const {quesId,quesName} = await params
+    const { quesId } = await params;
     const [question, answers, upvotes, downvotes, comments] = await Promise.all([
         databases.getDocument(db, questionCollection, quesId),
         databases.listDocuments(db, answerCollection, [
@@ -55,12 +65,12 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
 
     // since it is dependent on the question, we fetch it here outside of the Promise.all
     const author = await users.get<UserPrefs>(question.authorId);
-    [comments.documents, answers.documents] = await Promise.all([
+    const [questionCommentDocuments, questionAnswerDocuments] = await Promise.all([
         Promise.all(
             comments.documents.map(async comment => {
                 const author = await users.get<UserPrefs>(comment.authorId);
                 return {
-                    ...comment,
+                    ...toPlainDocument(comment),
                     author: {
                         $id: author.$id,
                         name: author.name,
@@ -92,25 +102,28 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                     ]),
                 ]);
 
-                comments.documents = await Promise.all(
-                    comments.documents.map(async comment => {
-                        const author = await users.get<UserPrefs>(comment.authorId);
-                        return {
-                            ...comment,
-                            author: {
-                                $id: author.$id,
-                                name: author.name,
-                                reputation: author.prefs.reputation,
-                            },
-                        };
-                    })
-                );
+                const answerComments = {
+                    total: comments.total,
+                    documents: await Promise.all(
+                        comments.documents.map(async comment => {
+                            const author = await users.get<UserPrefs>(comment.authorId);
+                            return {
+                                ...toPlainDocument(comment),
+                                author: {
+                                    $id: author.$id,
+                                    name: author.name,
+                                    reputation: author.prefs.reputation,
+                                },
+                            };
+                        })
+                    ),
+                };
 
                 return {
-                    ...answer,
-                    comments,
-                    upvotesDocuments: upvotes,
-                    downvotesDocuments: downvotes,
+                    ...toPlainDocument(answer),
+                    comments: answerComments,
+                    upvotesDocuments: toPlainDocumentList(upvotes),
+                    downvotesDocuments: toPlainDocumentList(downvotes),
                     author: {
                         $id: author.$id,
                         name: author.name,
@@ -120,6 +133,16 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
             })
         ),
     ]);
+    const questionComments = {
+        total: comments.total,
+        documents: questionCommentDocuments,
+    };
+    const questionAnswers = {
+        total: answers.total,
+        documents: questionAnswerDocuments,
+    };
+    const questionUpvotes = toPlainDocumentList(upvotes);
+    const questionDownvotes = toPlainDocumentList(downvotes);
 
     return (
         <TracingBeam className="container pl-6">
@@ -157,8 +180,8 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             type="question"
                             id={question.$id}
                             className="w-full"
-                            upvotes={upvotes}
-                            downvotes={downvotes}
+                            upvotes={questionUpvotes}
+                            downvotes={questionDownvotes}
                         />
                         <EditQuestion
                             questionId={question.$id}
@@ -172,10 +195,10 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <picture>
                             <img
                                 src={
-                                    storage.getFilePreview(
+                                    String(storage.getFilePreview(
                                         questionAttachmentBucket,
                                         question.attachmentId
-                                    ).href
+                                    ))
                                 }
                                 alt={question.title}
                                 className="mt-3 rounded-lg"
@@ -195,7 +218,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(author.name, 36, 36).href}
+                                    src={String(avatars.getInitials(author.name, 36, 36))}
                                     alt={author.name}
                                     className="rounded-lg"
                                 />
@@ -213,7 +236,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             </div>
                         </div>
                         <Comments
-                            comments={comments}
+                            comments={questionComments}
                             className="mt-4"
                             type="question"
                             typeId={question.$id}
@@ -221,7 +244,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <hr className="my-4 border-white/40" />
                     </div>
                 </div>
-                <Answers answers={answers} questionId={question.$id} />
+                <Answers answers={questionAnswers} questionId={question.$id} />
             </div>
         </TracingBeam>
     );

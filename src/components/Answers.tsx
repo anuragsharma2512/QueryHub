@@ -1,22 +1,63 @@
 "use client";
 
-import { ID, Models } from "appwrite";
 import React from "react";
 import VoteButtons from "./VoteButtons";
 import { useAuthStore } from "@/store/Auth";
-import { avatars, databases } from "@/models/client/config";
-import { answerCollection, db } from "@/models/name";
+import { avatars } from "@/models/client/config";
 import RTE, { MarkdownPreview } from "./RTE";
 import Comments from "./Comments";
 import slugify from "@/utils/slugify";
 import Link from "next/link";
 import { IconTrash } from "@tabler/icons-react";
 
+type BaseDocument = {
+    $id: string;
+    [key: string]: unknown;
+};
+
+type PlainDocumentList<T> = {
+    total: number;
+    documents: T[];
+};
+
+type Author = {
+    $id: string;
+    name: string;
+    reputation: number;
+};
+
+type CommentDocument = BaseDocument & {
+    $createdAt: string;
+    content?: string;
+    authorId?: string;
+    author?: {
+        name?: string;
+    };
+};
+
+type AnswerDocument = BaseDocument & {
+    content?: string;
+    authorId?: string;
+    author?: Author;
+    upvotesDocuments?: PlainDocumentList<BaseDocument>;
+    downvotesDocuments?: PlainDocumentList<BaseDocument>;
+    comments?: PlainDocumentList<CommentDocument>;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === "object" && "message" in error) {
+        const message = error.message;
+        if (typeof message === "string") return message;
+    }
+    return fallback;
+};
+
 const Answers = ({
     answers: _answers,
     questionId,
 }: {
-    answers: Models.DocumentList<Models.Document>;
+    answers: PlainDocumentList<AnswerDocument>;
     questionId: string;
 }) => {
     const [answers, setAnswers] = React.useState(_answers);
@@ -37,7 +78,7 @@ const Answers = ({
                 }),
             });
 
-            const data = await response.json();
+            const data = (await response.json()) as AnswerDocument;
 
             if (!response.ok) throw data;
 
@@ -47,7 +88,11 @@ const Answers = ({
                 documents: [
                     {
                         ...data,
-                        author: user,
+                        author: {
+                            $id: user.$id,
+                            name: user.name,
+                            reputation: user.prefs.reputation,
+                        },
                         upvotesDocuments: { documents: [], total: 0 },
                         downvotesDocuments: { documents: [], total: 0 },
                         comments: { documents: [], total: 0 },
@@ -55,8 +100,8 @@ const Answers = ({
                     ...prev.documents,
                 ],
             }));
-        } catch (error: any) {
-            window.alert(error?.message || "Error creating answer");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Error creating answer"));
         }
     };
 
@@ -77,8 +122,8 @@ const Answers = ({
                 total: prev.total - 1,
                 documents: prev.documents.filter(answer => answer.$id !== answerId),
             }));
-        } catch (error: any) {
-            window.alert(error?.message || "Error deleting answer");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Error deleting answer"));
         }
     };
 
@@ -91,8 +136,8 @@ const Answers = ({
                         <VoteButtons
                             type="answer"
                             id={answer.$id}
-                            upvotes={answer.upvotesDocuments}
-                            downvotes={answer.downvotesDocuments}
+                            upvotes={answer.upvotesDocuments || { total: 0, documents: [] }}
+                            downvotes={answer.downvotesDocuments || { total: 0, documents: [] }}
                         />
                         {user?.$id === answer.authorId ? (
                             <button
@@ -104,29 +149,29 @@ const Answers = ({
                         ) : null}
                     </div>
                     <div className="w-full overflow-auto">
-                        <MarkdownPreview className="rounded-xl p-4" source={answer.content} />
+                        <MarkdownPreview className="rounded-xl p-4" source={answer.content || ""} />
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(answer.author.name, 36, 36).href}
-                                    alt={answer.author.name}
+                                    src={String(avatars.getInitials(answer.author?.name || "User", 36, 36))}
+                                    alt={answer.author?.name || "User"}
                                     className="rounded-lg"
                                 />
                             </picture>
                             <div className="block leading-tight">
                                 <Link
-                                    href={`/users/${answer.author.$id}/${slugify(answer.author.name)}`}
+                                    href={`/users/${answer.author?.$id || ""}/${slugify(answer.author?.name || "user")}`}
                                     className="text-orange-500 hover:text-orange-600"
                                 >
-                                    {answer.author.name}
+                                    {answer.author?.name}
                                 </Link>
                                 <p>
-                                    <strong>{answer.author.reputation}</strong>
+                                    <strong>{answer.author?.reputation}</strong>
                                 </p>
                             </div>
                         </div>
                         <Comments
-                            comments={answer.comments}
+                            comments={answer.comments || { total: 0, documents: [] }}
                             className="mt-4"
                             type="answer"
                             typeId={answer.$id}

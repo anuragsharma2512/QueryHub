@@ -7,9 +7,37 @@ import { cn } from "@/lib/utils"
 import convertDateToRelativeTime from "@/utils/relativeTime";
 import slugify from "@/utils/slugify";
 import { IconTrash } from "@tabler/icons-react";
-import { ID, Models } from "appwrite";
+import { ID } from "appwrite";
 import Link from "next/link";
 import React from "react";
+
+type BaseDocument = {
+    $id: string;
+    $createdAt: string;
+    [key: string]: unknown;
+};
+
+type PlainDocumentList<T> = {
+    total: number;
+    documents: T[];
+};
+
+type CommentDocument = BaseDocument & {
+    content?: string;
+    authorId?: string;
+    author?: {
+        name?: string;
+    };
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === "object" && "message" in error) {
+        const message = error.message;
+        if (typeof message === "string") return message;
+    }
+    return fallback;
+};
 
 const Comments = ({
     comments: _comments,
@@ -17,7 +45,7 @@ const Comments = ({
     typeId,
     className,
 }: {
-    comments: Models.DocumentList<Models.Document>;
+    comments: PlainDocumentList<CommentDocument>;
     type: "question" | "answer";
     typeId: string;
     className?: string;
@@ -41,10 +69,10 @@ const Comments = ({
             setNewComment(() => "");
             setComments(prev => ({
                 total: prev.total + 1,
-                documents: [{ ...response, author: user }, ...prev.documents],
+                documents: [{ ...(response as unknown as CommentDocument), author: user }, ...prev.documents],
             }));
-        } catch (error: any) {
-            window.alert(error?.message || "Error creating comment");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Error creating comment"));
         }
     };
 
@@ -56,8 +84,8 @@ const Comments = ({
                 total: prev.total - 1,
                 documents: prev.documents.filter(comment => comment.$id !== commentId),
             }));
-        } catch (error: any) {
-            window.alert(error?.message || "Error deleting comment");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Error deleting comment"));
         }
     };
 
@@ -68,12 +96,12 @@ const Comments = ({
                     <hr className="border-white/40" />
                     <div className="flex gap-2">
                         <p className="text-sm">
-                            {comment.content} -{" "}
+                            {String(comment.content || "")} -{" "}
                             <Link
-                                href={`/users/${comment.authorId}/${slugify(comment.author.name)}`}
+                                href={`/users/${comment.authorId || ""}/${slugify(comment.author?.name || "user")}`}
                                 className="text-orange-500 hover:text-orange-600"
                             >
-                                {comment.author.name}
+                                {comment.author?.name}
                             </Link>{" "}
                             <span className="opacity-60">
                                 {convertDateToRelativeTime(new Date(comment.$createdAt))}

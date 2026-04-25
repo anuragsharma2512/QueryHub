@@ -5,9 +5,40 @@ import { db, voteCollection } from "@/models/name";
 import { useAuthStore } from "@/store/Auth";
 import { cn } from "@/lib/utils";
 import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
-import { ID, Models, Query } from "appwrite";
+import { Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
+
+type BaseDocument = {
+    $id: string;
+    [key: string]: unknown;
+};
+
+type PlainDocumentList<T> = {
+    total: number;
+    documents: T[];
+};
+
+type VoteDocument = BaseDocument & {
+    voteStatus?: "upvoted" | "downvoted";
+};
+
+type VoteResponse = {
+    data: {
+        document: VoteDocument | null;
+        voteResult: number;
+    };
+    message?: string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === "object" && "message" in error) {
+        const message = error.message;
+        if (typeof message === "string") return message;
+    }
+    return fallback;
+};
 
 const VoteButtons = ({
     type,
@@ -18,11 +49,11 @@ const VoteButtons = ({
 }: {
     type: "question" | "answer";
     id: string;
-    upvotes: Models.DocumentList<Models.Document>;
-    downvotes: Models.DocumentList<Models.Document>;
+    upvotes: PlainDocumentList<BaseDocument>;
+    downvotes: PlainDocumentList<BaseDocument>;
     className?: string;
 }) => {
-    const [votedDocument, setVotedDocument] = React.useState<Models.Document | null>(); // undefined means not fetched yet
+    const [votedDocument, setVotedDocument] = React.useState<VoteDocument | null>(); // undefined means not fetched yet
     const [voteResult, setVoteResult] = React.useState<number>(upvotes.total - downvotes.total);
 
     const { user } = useAuthStore();
@@ -36,7 +67,7 @@ const VoteButtons = ({
                     Query.equal("typeId", id),
                     Query.equal("votedById", user.$id),
                 ]);
-                setVotedDocument(() => response.documents[0] || null);
+                setVotedDocument(() => (response.documents[0] as VoteDocument | undefined) || null);
             }
         })();
     }, [user, id, type]);
@@ -57,14 +88,14 @@ const VoteButtons = ({
                 }),
             });
 
-            const data = await response.json();
+            const data = (await response.json()) as VoteResponse;
 
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
             setVotedDocument(() => data.data.document);
-        } catch (error: any) {
-            window.alert(error?.message || "Something went wrong");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Something went wrong"));
         }
     };
 
@@ -84,14 +115,14 @@ const VoteButtons = ({
                 }),
             });
 
-            const data = await response.json();
+            const data = (await response.json()) as VoteResponse;
 
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
             setVotedDocument(() => data.data.document);
-        } catch (error: any) {
-            window.alert(error?.message || "Something went wrong");
+        } catch (error: unknown) {
+            window.alert(getErrorMessage(error, "Something went wrong"));
         }
     };
 
