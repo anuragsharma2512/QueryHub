@@ -1,4 +1,5 @@
 import Pagination from "@/components/Pagination";
+import { Suspense } from "react";
 import QuestionCard from "@/components/QuestionCard";
 import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
 import { databases, users } from "@/models/server/config";
@@ -63,7 +64,9 @@ const Page = async ({
                     <QuestionCard key={ques.$id} ques={ques} />
                 ))}
             </div>
-            <Pagination total={questions.total} limit={25} />
+            <Suspense>
+                <Pagination total={questions.total} limit={25} />
+            </Suspense>
         </div>
     );
 };

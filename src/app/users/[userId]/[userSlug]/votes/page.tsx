@@ -5,7 +5,7 @@ import convertDateToRelativeTime from "@/utils/relativeTime";
 import slugify from "@/utils/slugify";
 import Link from "next/link";
 import { Query } from "node-appwrite";
-import React from "react";
+import React, { Suspense } from "react";
 
 const Page = async ({
     params,
@@ -123,7 +123,9 @@ const Page = async ({
                     </div>
                 ))}
             </div>
-            <Pagination total={votes.total} limit={25} />
+            <Suspense>
+                <Pagination total={votes.total} limit={25} />
+            </Suspense>
         </div>
     );
 };

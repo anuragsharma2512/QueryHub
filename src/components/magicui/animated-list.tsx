@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type HTMLMotionProps } from "framer-motion";
 import React, { ReactElement, useEffect, useMemo, useState } from "react";
 
 export const AnimatedList = React.memo(
@@ -44,7 +44,7 @@ export const AnimatedList = React.memo(
 AnimatedList.displayName = "AnimatedList";
 
 export function AnimatedListItem({ children }: { children: React.ReactNode }) {
-    const animations = {
+    const animations: HTMLMotionProps<"div"> = {
         initial: { scale: 0, opacity: 0 },
         animate: { scale: 1, opacity: 1, originY: 0 },
         exit: { scale: 0, opacity: 0 },

@@ -8,6 +8,7 @@ import QuestionCard from "@/components/QuestionCard";
 import { UserPrefs } from "@/store/Auth";
 import Pagination from "@/components/Pagination";
 import Search from "./Search";
+import { Suspense } from "react";
 
 const Page = async ({
     searchParams,
@@ -75,7 +76,9 @@ const Page = async ({
                 </Link>
             </div>
             <div className="mb-4">
-                <Search />
+                <Suspense>
+                    <Search />
+                </Suspense>
             </div>
             <div className="mb-4">
                 <p>{questions.total} questions</p>
@@ -85,7 +88,9 @@ const Page = async ({
                     <QuestionCard key={ques.$id} ques={ques} />
                 ))}
             </div>
-            <Pagination total={questions.total} limit={25} />
+            <Suspense>
+                <Pagination total={questions.total} limit={25} />
+            </Suspense>
         </div>
     );
 };

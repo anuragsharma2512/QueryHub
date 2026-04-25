@@ -1,4 +1,5 @@
 import Pagination from "@/components/Pagination";
+import { Suspense } from "react";
 import { MarkdownPreview } from "@/components/RTE";
 import { answerCollection, db, questionCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
@@ -62,7 +63,9 @@ const Page = async ({
                 ))}
             </div>
 
-            <Pagination total={answers.total} limit={25} />
+            <Suspense>
+                <Pagination total={answers.total} limit={25} />
+            </Suspense>
         </div>
     );
 };
